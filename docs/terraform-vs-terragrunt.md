@@ -1,7 +1,18 @@
+## Intro
+- This repo is an `infrastructure-live` example: production- and non-production-account directories contain Terragrunt definitions that reference reusable Terraform modules from a separate catalog.
+- Terragrunt stacks describe all units that must deploy together; Terragrunt handles provider/backend generation and shared inputs so individual stacks stay concise.
+- In plain Terraform you must hand-write each environment’s provider and backend files because there is no built-in inheritance or code generation across folders.
+
+## What Is a Stack?
+- A stack is a Terragrunt construct representing a group of related units (Terraform modules) that should be deployed, planned, or destroyed together.
+- Each stack has a `terragrunt.stack.hcl` file listing its units, their sources, environment-specific values, and dependency wiring (e.g., `service`, `db`, security groups).
+
 ## Terraform vs. Terragrunt Structure
 
 ### Pure Terraform Layout
 - Each environment (e.g. `non-prod/us-east-1/stateful-ec2-asg-service`) holds its own `provider.tf`, `backend.tf`, and stack-specific `*.tf` files.
+- Provider blocks are required to configure which cloud(s) Terraform talks to, authentication settings, and default regions; without Terragrunt, every directory must declare one explicitly.
+- Backend blocks (often placed in `backend.tf`) tell Terraform where to store state; pure Terraform expects that configuration in every working directory, so you must copy it manually or script extra tooling.
 - Shared modules are referenced directly, so every folder repeats boilerplate for AWS provider, remote state, tagging, and dependency wiring.
 - To stay DRY you’d either copy/paste the same snippets or create thin wrapper modules—both approaches are fragile and hard to keep consistent.
 - Terraform lacks built-in inheritance between directories, so changes to providers/backends must be propagated manually to every environment.
