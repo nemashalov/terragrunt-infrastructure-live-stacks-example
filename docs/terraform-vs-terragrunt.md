@@ -44,8 +44,9 @@
 - Because the stack files stay small, copying from non-prod to prod typically requires changing only the values that truly differ (e.g., names, sizes, credentials).
 
 ### 5. Separation Between Catalog and Live Config
-- Reusable Terraform modules live in the catalog repo and evolve independently; stacks reference pinned versions to ensure reproducibility.
-- Teams iterate on module logic once, then roll out by updating the `source` (or `version`) attribute in stack files, avoiding drift across environments.
+- The **catalog** repository stores reusable Terraform modules—the building blocks (ASG service, database, security groups) that define how to provision a pattern. It’s versioned like any other library and doesn’t contain environment-specific values.
+- The **live configuration** repository (this repo) references those catalog modules via Terragrunt stacks and supplies concrete inputs for each account/region/environment combination.
+- Teams evolve module logic once in the catalog, cut a version (e.g., `v0.2.0`), and then bump the `source`/`version` in the live repo to roll it out. This keeps module code centralized while live configs stay thin and environment-focused.
 
 ## Practical Benefits
 - **Consistency:** Provider, backend, and common locals are enforced globally; no risk of a forgotten setting in one environment.
