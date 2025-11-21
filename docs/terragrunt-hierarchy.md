@@ -2,6 +2,11 @@
 
 This repo follows the canonical Terragrunt layout: account → region → resource stack. The seemingly inverted placement of `root.hcl` (top-level) and `region.hcl` (nested) is intentional, because Terragrunt evaluates `root.hcl` *from the perspective of whichever stack or unit includes it*. That lets `root.hcl` use helper functions such as `find_in_parent_folders` to “look up” context files that live closer to the stack you are running.
 
+### Stack vs. Unit (Terragrunt 2.x vocabulary)
+- **Stack (`terragrunt.stack.hcl`)**: A runnable bundle of infrastructure that wires multiple components together. The stack defines the catalog sources to use, the dependency graph, and the `values` handed to each component. Running `terragrunt apply` from a stack folder provisions every unit declared inside that stack.
+- **Unit (`unit "name" { ... }`)**: A single catalog component (roughly equivalent to a Terraform module invocation). Units live inside stacks, pull their module via `source`, and receive strongly typed `values`. Think of a unit as “one deployable thing” (an ASG, an RDS instance, a security group, etc.), while a stack is “the collection of units that make up an app or service.”
+- Stacks orchestrate units: they pass shared locals, express dependencies via `path` references, and ensure everything is applied/destroyed in the right order. Units stay focused on configuring their specific module.
+
 ### Why `region.hcl` lives under each region directory
 - Each AWS region gets its own settings (e.g., `aws_region`, per-region tags, AMI IDs). Keeping those in `prod/us-east-1/region.hcl`, `non-prod/us-west-2/region.hcl`, etc. keeps the values near the stacks that consume them.
 - Account-scoped data (`account.hcl`) sits one level higher so that every region beneath inherits the same account number, partitions, IAM defaults.
