@@ -52,12 +52,32 @@ kubectl port-forward <pod-name> 9229:9229
 # Connect Chrome DevTools to chrome://inspect
 ```
 
-#### Python
+#### Python (Finding Spinlocked Methods / High CPU)
+
+**py-spy (Recommended - Works with perf_event_paranoid = 4)**
 ```bash
-# Use pdb
+# Use the JupyterLab debug script
+./docs/debug-jupyterlab.sh <jupyter-pod-name> [namespace]
+
+# Or manually install py-spy
+kubectl exec <pod-name> -- pip install py-spy
+
+# Live CPU view (shows which functions consume CPU)
+kubectl exec <pod-name> -- py-spy top --pid <PID> --subprocesses
+
+# Dump current stack traces
+kubectl exec <pod-name> -- py-spy dump --pid <PID> --subprocesses
+
+# Record profile for analysis
+kubectl exec <pod-name> -- py-spy record -o profile.svg --pid <PID> --duration 30 --subprocesses
+```
+
+**Other Python Debugging**
+```bash
+# Use pdb (interactive debugger)
 python -m pdb your_script.py
 
-# Or remote debugging with debugpy
+# Remote debugging with debugpy
 pip install debugpy
 python -m debugpy --listen 0.0.0.0:5678 your_script.py
 kubectl port-forward <pod-name> 5678:5678
@@ -132,8 +152,10 @@ top -p <PID>
 ## Files Created
 
 - `docs/eks-debugging-guide.md` - Comprehensive guide
+- `docs/python-debugging-guide.md` - Python-specific debugging (py-spy, spinlocks)
 - `docs/debug-pod.yaml` - Kubernetes manifest for debug pod
 - `docs/debug-helper.sh` - Helper script for quick debugging
+- `docs/debug-jupyterlab.sh` - Python/JupyterLab profiling script
 
 ## See Also
 
